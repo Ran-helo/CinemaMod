@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "cinemamod",
+  "name": "CinemaMod",
+  "version": "${version}",
+  "license": "MIT",
+  "entrypoints": {
+    "client": [
+      "com.cinemamod.fabric.CinemaModClient"
+    ]
+  },
+  "mixins": [
+    "cinemamod.fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.13.3",
+    "fabric": "*",
+    "minecraft": "1.18.x",
+    "java": ">=17"
+  }
+}

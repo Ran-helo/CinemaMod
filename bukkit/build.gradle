@@ -1,0 +1,20 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+
+repositories {
+    maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+    maven { url "https://maven.enginehub.org/repo/" }
+    maven { url "https://repo.dmulloy2.net/repository/public/" }
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.spigotmc:spigot-api:1.18.2-R0.1-SNAPSHOT"
+    implementation "org.xerial:sqlite-jdbc:3.36.0.3"
+    implementation "io.netty:netty-all:4.1.68.Final"
+    implementation "com.sk89q.worldguard:worldguard-bukkit:7.0.7"
+    implementation "com.comphenix.protocol:ProtocolLib:4.7.0"
+    implementation "com.google.code.gson:gson:2.8.9"
+}

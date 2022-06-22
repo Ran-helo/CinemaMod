@@ -1,0 +1,28 @@
+modLoader = "javafml"
+loaderVersion = "[40,)"
+#issueTrackerURL = ""
+license = "MIT"
+
+[[mods]]
+modId = "cinemamod"
+version = "${version}"
+displayName = "CinemaMod"
+authors = "Me and You!"
+description = '''
+It does uwu stuff
+'''
+logoFile = "icon.png"
+
+[[dependencies.cinemamod]]
+modId = "forge"
+mandatory = true
+versionRange = "[40,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.cinemamod]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.18.2,)"
+ordering = "NONE"
+side = "BOTH"
