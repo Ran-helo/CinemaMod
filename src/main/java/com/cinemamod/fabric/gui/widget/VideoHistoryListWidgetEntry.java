@@ -2,14 +2,13 @@ package com.cinemamod.fabric.gui.widget;
 
 import com.cinemamod.fabric.util.NetworkUtil;
 import com.cinemamod.fabric.video.list.VideoListEntry;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Selectable;
-
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.narration.NarratableEntry;
 
 public class VideoHistoryListWidgetEntry extends VideoListWidgetEntry {
 
-    public VideoHistoryListWidgetEntry(VideoListWidget parent, VideoListEntry video, MinecraftClient client) {
+    public VideoHistoryListWidgetEntry(VideoListWidget parent, VideoListEntry video, Minecraft client) {
         super(parent, video, client);
     }
 
@@ -19,7 +18,7 @@ public class VideoHistoryListWidgetEntry extends VideoListWidgetEntry {
     }
 
     @Override
-    public List<? extends Selectable> selectableChildren() {
+    public List<? extends NarratableEntry> narratables() {
         return null;
     }
 

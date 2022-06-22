@@ -5,10 +5,10 @@ import com.cinemamod.fabric.buffer.PacketByteBufSerializable;
 import com.cinemamod.fabric.cef.CefUtil;
 import com.cinemamod.fabric.video.Video;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.Blocks;
 import org.apache.commons.lang3.NotImplementedException;
 import org.cef.browser.CefBrowserOsr;
 
@@ -183,15 +183,15 @@ public class Screen implements PacketByteBufSerializable<Screen> {
     }
 
     public void register() {
-        if (MinecraftClient.getInstance().world == null) {
+        if (Minecraft.getInstance().level == null) {
             return;
         }
 
         int chunkX = x >> 4;
         int chunkZ = z >> 4;
 
-        if (MinecraftClient.getInstance().world.isChunkLoaded(chunkX, chunkZ)) {
-            MinecraftClient.getInstance().world.setBlockState(getBlockPos(), ScreenBlock.SCREEN_BLOCK.getDefaultState());
+        if (Minecraft.getInstance().level.hasChunk(chunkX, chunkZ)) {
+            Minecraft.getInstance().level.setBlockAndUpdate(getBlockPos(), ScreenBlock.SCREEN_BLOCK.defaultBlockState());
         }
 
         ClientChunkEvents.CHUNK_LOAD.register((clientWorld, worldChunk) -> {
@@ -201,7 +201,7 @@ public class Screen implements PacketByteBufSerializable<Screen> {
 
             // If the loaded chunk has this screen block in it, place it in the world
             if (worldChunk.getPos().x == chunkX && worldChunk.getPos().z == chunkZ) {
-                clientWorld.setBlockState(getBlockPos(), ScreenBlock.SCREEN_BLOCK.getDefaultState());
+                clientWorld.setBlockAndUpdate(getBlockPos(), ScreenBlock.SCREEN_BLOCK.defaultBlockState());
             }
         });
     }
@@ -209,17 +209,17 @@ public class Screen implements PacketByteBufSerializable<Screen> {
     public void unregister() {
         unregistered = true;
 
-        if (MinecraftClient.getInstance().world != null) {
-            MinecraftClient.getInstance().world.setBlockState(getBlockPos(), Blocks.AIR.getDefaultState());
+        if (Minecraft.getInstance().level != null) {
+            Minecraft.getInstance().level.setBlockAndUpdate(getBlockPos(), Blocks.AIR.defaultBlockState());
         }
     }
 
     @Override
-    public Screen fromBytes(PacketByteBuf buf) {
+    public Screen fromBytes(FriendlyByteBuf buf) {
         x = buf.readInt();
         y = buf.readInt();
         z = buf.readInt();
-        facing = buf.readString();
+        facing = buf.readUtf();
         width = buf.readFloat();
         height = buf.readFloat();
         visible = buf.readBoolean();
@@ -228,7 +228,7 @@ public class Screen implements PacketByteBufSerializable<Screen> {
     }
 
     @Override
-    public void toBytes(PacketByteBuf buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         throw new NotImplementedException("Not implemented on client");
     }
 

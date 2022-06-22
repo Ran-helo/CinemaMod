@@ -1,11 +1,11 @@
 package com.cinemamod.fabric.buffer;
 
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 
 public interface PacketByteBufSerializable<T extends PacketByteBufSerializable> {
 
-    T fromBytes(PacketByteBuf buf);
+    T fromBytes(FriendlyByteBuf buf);
 
-    void toBytes(PacketByteBuf buf);
+    void toBytes(FriendlyByteBuf buf);
 
 }

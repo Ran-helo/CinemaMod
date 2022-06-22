@@ -5,77 +5,77 @@ import com.cinemamod.fabric.block.PreviewScreenBlockEntity;
 import com.cinemamod.fabric.screen.PreviewScreen;
 import com.cinemamod.fabric.screen.PreviewScreenManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.math.Quaternion;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Quaternion;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 
 public class PreviewScreenBlockEntityRenderer implements BlockEntityRenderer<PreviewScreenBlockEntity> {
 
-    public PreviewScreenBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
+    public PreviewScreenBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
     }
 
     @Override
-    public void render(PreviewScreenBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void render(PreviewScreenBlockEntity entity, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
         PreviewScreenManager previewScreenManager = CinemaModClient.getInstance().getPreviewScreenManager();
-        PreviewScreen previewScreen = previewScreenManager.getPreviewScreen(entity.getPos());
+        PreviewScreen previewScreen = previewScreenManager.getPreviewScreen(entity.getBlockPos());
         if (previewScreen == null) return;
         RenderSystem.enableDepthTest();
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder buffer = tessellator.getBuilder();
         renderScreenTexture(previewScreen, matrices, tessellator, buffer);
         renderVideoThumbnail(previewScreen, matrices, tessellator, buffer);
         renderScreenText(previewScreen, matrices);
         RenderSystem.disableDepthTest();
     }
 
-    private static void renderScreenTexture(PreviewScreen previewScreen, MatrixStack matrices, Tessellator tessellator, BufferBuilder buffer) {
-        NativeImageBackedTexture texture = previewScreen.hasVideoInfo() ? previewScreen.getActiveTexture() : previewScreen.getStaticTexture();
+    private static void renderScreenTexture(PreviewScreen previewScreen, PoseStack matrices, Tesselator tessellator, BufferBuilder buffer) {
+        DynamicTexture texture = previewScreen.hasVideoInfo() ? previewScreen.getActiveTexture() : previewScreen.getStaticTexture();
 
         if (texture != null) {
-            matrices.push();
+            matrices.pushPose();
             matrices.translate(1, 1, 0);
             RenderUtil.moveForward(matrices, previewScreen.getFacing(), 0.008f);
             RenderUtil.fixRotation(matrices, previewScreen.getFacing());
             matrices.scale(3, 2, 0);
-            RenderUtil.renderTexture(matrices, tessellator, buffer, texture.getGlId());
-            matrices.pop();
+            RenderUtil.renderTexture(matrices, tessellator, buffer, texture.getId());
+            matrices.popPose();
         }
     }
 
-    private static void renderVideoThumbnail(PreviewScreen previewScreen, MatrixStack matrices, Tessellator tessellator, BufferBuilder buffer) {
-        NativeImageBackedTexture texture = previewScreen.getThumbnailTexture();
+    private static void renderVideoThumbnail(PreviewScreen previewScreen, PoseStack matrices, Tesselator tessellator, BufferBuilder buffer) {
+        DynamicTexture texture = previewScreen.getThumbnailTexture();
 
         if (texture != null) {
-            matrices.push();
+            matrices.pushPose();
             matrices.translate(1, 1, 0);
             RenderUtil.moveHorizontal(matrices, previewScreen.getFacing(), 0.5f);
             RenderUtil.moveVertical(matrices, -1 / 3f);
             RenderUtil.moveForward(matrices, previewScreen.getFacing(), 0.01f);
             RenderUtil.fixRotation(matrices, previewScreen.getFacing());
             matrices.scale(3 / 1.5f, 2 / 1.5f, 0);
-            RenderUtil.renderTexture(matrices, tessellator, buffer, texture.getGlId());
-            matrices.pop();
+            RenderUtil.renderTexture(matrices, tessellator, buffer, texture.getId());
+            matrices.popPose();
         }
     }
 
-    private static void renderScreenText(PreviewScreen previewScreen, MatrixStack matrices) {
-        matrices.push();
+    private static void renderScreenText(PreviewScreen previewScreen, PoseStack matrices) {
+        matrices.pushPose();
         matrices.translate(1, 1, 0);
         RenderUtil.moveHorizontal(matrices, previewScreen.getFacing(), 0.1f);
         RenderUtil.moveVertical(matrices, -0.15f);
         RenderUtil.moveForward(matrices, previewScreen.getFacing(), 0.01f);
         RenderUtil.fixRotation(matrices, previewScreen.getFacing());
-        matrices.multiply(new Quaternion(180, 0, 0, true));
+        matrices.mulPose(new Quaternion(180, 0, 0, true));
         matrices.scale(0.02f, 0.02f, 0.02f);
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+        Font textRenderer = Minecraft.getInstance().font;
         final String topText;
         final String bottomText;
         if (previewScreen.hasVideoInfo()) {
@@ -88,7 +88,7 @@ public class PreviewScreenBlockEntityRenderer implements BlockEntityRenderer<Pre
         textRenderer.draw(matrices, topText, 0F, 0F, 16777215);
         RenderUtil.moveVertical(matrices, 78f);
         textRenderer.draw(matrices, bottomText, 0F, 0F, 16777215);
-        matrices.pop();
+        matrices.popPose();
     }
 
     public static void register() {

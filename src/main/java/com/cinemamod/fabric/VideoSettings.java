@@ -1,7 +1,5 @@
 package com.cinemamod.fabric;
 
-import net.minecraft.client.MinecraftClient;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,10 +7,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.client.Minecraft;
 
 public class VideoSettings {
 
-    private static final Path PATH = MinecraftClient.getInstance().runDirectory
+    private static final Path PATH = Minecraft.getInstance().gameDirectory
             .toPath()
             .resolve("config")
             .resolve(CinemaMod.MODID)

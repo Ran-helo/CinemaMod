@@ -4,30 +4,29 @@ import com.cinemamod.fabric.CinemaModClient;
 import com.cinemamod.fabric.gui.VideoQueueScreen;
 import com.cinemamod.fabric.video.queue.QueuedVideo;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.ElementListWidget;
-import net.minecraft.client.util.math.MatrixStack;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 
-public class VideoQueueWidget extends ElementListWidget<VideoQueueWidgetEntry> {
+public class VideoQueueWidget extends ContainerObjectSelectionList<VideoQueueWidgetEntry> {
 
     private VideoQueueScreen parent;
 
-    public VideoQueueWidget(VideoQueueScreen parent, MinecraftClient client, int width, int height, int top, int bottom, int itemHeight) {
+    public VideoQueueWidget(VideoQueueScreen parent, Minecraft client, int width, int height, int top, int bottom, int itemHeight) {
         super(client, width, height, top, bottom, itemHeight);
         this.parent = parent;
         setRenderBackground(false);
-        setRenderHorizontalShadows(false);
+        setRenderTopAndBottom(false);
         update();
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        double d = client.getWindow().getScaleFactor();
-        RenderSystem.enableScissor((int) ((double) this.getRowLeft() * d), (int) ((double) (this.height - this.bottom) * d), (int) ((double) (this.getScrollbarPositionX() + 6) * d), (int) ((double) (this.height - (this.height - this.bottom) - this.top - 4) * d));
+    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+        double d = minecraft.getWindow().getGuiScale();
+        RenderSystem.enableScissor((int) ((double) this.getRowLeft() * d), (int) ((double) (this.height - this.y1) * d), (int) ((double) (this.getScrollbarPosition() + 6) * d), (int) ((double) (this.height - (this.height - this.y1) - this.y0 - 4) * d));
         super.render(matrices, mouseX, mouseY, delta);
         RenderSystem.disableScissor();
     }
@@ -43,7 +42,7 @@ public class VideoQueueWidget extends ElementListWidget<VideoQueueWidgetEntry> {
         List<QueuedVideo> queuedVideos = CinemaModClient.getInstance().getVideoQueue().getVideos();
         Collections.sort(queuedVideos);
         for (int i = 0; i < queuedVideos.size(); i++) {
-            entries.add(new VideoQueueWidgetEntry(parent, queuedVideos.get(i), client));
+            entries.add(new VideoQueueWidgetEntry(parent, queuedVideos.get(i), minecraft));
         }
         replaceEntries(entries);
     }

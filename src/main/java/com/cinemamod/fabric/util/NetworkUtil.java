@@ -15,10 +15,9 @@ import com.cinemamod.fabric.video.list.VideoList;
 import com.cinemamod.fabric.video.list.VideoListEntry;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,23 +25,23 @@ public final class NetworkUtil {
 
     private static final CinemaModClient CD = CinemaModClient.getInstance();
     /* INCOMING */
-    private static final Identifier CHANNEL_SERVICES = new Identifier(CinemaMod.MODID, "services");
-    private static final Identifier CHANNEL_SCREENS = new Identifier(CinemaMod.MODID, "screens");
-    private static final Identifier CHANNEL_LOAD_SCREEN = new Identifier(CinemaMod.MODID, "load_screen");
-    private static final Identifier CHANNEL_UNLOAD_SCREEN = new Identifier(CinemaMod.MODID, "unload_screen");
-    private static final Identifier CHANNEL_UPDATE_PREVIEW_SCREEN = new Identifier(CinemaMod.MODID, "update_preview_screen");
-    private static final Identifier CHANNEL_OPEN_SETTINGS_SCREEN = new Identifier(CinemaMod.MODID, "open_settings_screen");
-    private static final Identifier CHANNEL_OPEN_HISTORY_SCREEN = new Identifier(CinemaMod.MODID, "open_history_screen");
-    private static final Identifier CHANNEL_OPEN_PLAYLISTS_SCREEN = new Identifier(CinemaMod.MODID, "open_playlists_screen");
-    private static final Identifier CHANNEL_VIDEO_LIST_HISTORY_SPLIT = new Identifier(CinemaMod.MODID, "video_list_history_split");
-    private static final Identifier CHANNEL_VIDEO_LIST_PLAYLIST_SPLIT = new Identifier(CinemaMod.MODID, "video_list_playlist_split");
-    private static final Identifier CHANNEL_VIDEO_QUEUE_STATE = new Identifier(CinemaMod.MODID, "video_queue_state");
+    private static final ResourceLocation CHANNEL_SERVICES = new ResourceLocation(CinemaMod.MODID, "services");
+    private static final ResourceLocation CHANNEL_SCREENS = new ResourceLocation(CinemaMod.MODID, "screens");
+    private static final ResourceLocation CHANNEL_LOAD_SCREEN = new ResourceLocation(CinemaMod.MODID, "load_screen");
+    private static final ResourceLocation CHANNEL_UNLOAD_SCREEN = new ResourceLocation(CinemaMod.MODID, "unload_screen");
+    private static final ResourceLocation CHANNEL_UPDATE_PREVIEW_SCREEN = new ResourceLocation(CinemaMod.MODID, "update_preview_screen");
+    private static final ResourceLocation CHANNEL_OPEN_SETTINGS_SCREEN = new ResourceLocation(CinemaMod.MODID, "open_settings_screen");
+    private static final ResourceLocation CHANNEL_OPEN_HISTORY_SCREEN = new ResourceLocation(CinemaMod.MODID, "open_history_screen");
+    private static final ResourceLocation CHANNEL_OPEN_PLAYLISTS_SCREEN = new ResourceLocation(CinemaMod.MODID, "open_playlists_screen");
+    private static final ResourceLocation CHANNEL_VIDEO_LIST_HISTORY_SPLIT = new ResourceLocation(CinemaMod.MODID, "video_list_history_split");
+    private static final ResourceLocation CHANNEL_VIDEO_LIST_PLAYLIST_SPLIT = new ResourceLocation(CinemaMod.MODID, "video_list_playlist_split");
+    private static final ResourceLocation CHANNEL_VIDEO_QUEUE_STATE = new ResourceLocation(CinemaMod.MODID, "video_queue_state");
     /* OUTGOING */
-    private static final Identifier CHANNEL_VIDEO_REQUEST = new Identifier(CinemaMod.MODID, "video_request");
-    private static final Identifier CHANNEL_VIDEO_HISTORY_REMOVE = new Identifier(CinemaMod.MODID, "video_history_remove");
-    private static final Identifier CHANNEL_VIDEO_QUEUE_VOTE = new Identifier(CinemaMod.MODID, "video_queue_vote");
-    private static final Identifier CHANNEL_VIDEO_QUEUE_REMOVE = new Identifier(CinemaMod.MODID, "video_queue_remove");
-    private static final Identifier CHANNEL_SHOW_VIDEO_TIMELINE = new Identifier(CinemaMod.MODID, "show_video_timeline");
+    private static final ResourceLocation CHANNEL_VIDEO_REQUEST = new ResourceLocation(CinemaMod.MODID, "video_request");
+    private static final ResourceLocation CHANNEL_VIDEO_HISTORY_REMOVE = new ResourceLocation(CinemaMod.MODID, "video_history_remove");
+    private static final ResourceLocation CHANNEL_VIDEO_QUEUE_VOTE = new ResourceLocation(CinemaMod.MODID, "video_queue_vote");
+    private static final ResourceLocation CHANNEL_VIDEO_QUEUE_REMOVE = new ResourceLocation(CinemaMod.MODID, "video_queue_remove");
+    private static final ResourceLocation CHANNEL_SHOW_VIDEO_TIMELINE = new ResourceLocation(CinemaMod.MODID, "show_video_timeline");
 
     public static void registerReceivers() {
         ClientPlayNetworking.registerGlobalReceiver(CHANNEL_SERVICES, (client, handler, buf, responseSender) -> {
@@ -97,8 +96,8 @@ public final class NetworkUtil {
         ClientPlayNetworking.registerGlobalReceiver(CHANNEL_VIDEO_QUEUE_STATE, (client, handler, buf, responseSender) -> {
             CD.getVideoQueue().fromBytes(buf);
             client.submit(() -> {
-                if (client.currentScreen instanceof VideoQueueScreen) {
-                    VideoQueueScreen videoQueueScreen = (VideoQueueScreen) client.currentScreen;
+                if (client.screen instanceof VideoQueueScreen) {
+                    VideoQueueScreen videoQueueScreen = (VideoQueueScreen) client.screen;
                     videoQueueScreen.videoQueueWidget.update();
                 }
             });
@@ -106,32 +105,32 @@ public final class NetworkUtil {
     }
 
     public static void sendVideoRequestPacket(VideoInfo videoInfo) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         videoInfo.toBytes(buf);
         ClientPlayNetworking.send(CHANNEL_VIDEO_REQUEST, buf);
     }
 
     public static void sendDeleteHistoryPacket(VideoInfo videoInfo) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         videoInfo.toBytes(buf);
         ClientPlayNetworking.send(CHANNEL_VIDEO_HISTORY_REMOVE, buf);
     }
 
     public static void sendVideoQueueVotePacket(VideoInfo videoInfo, int voteType) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         videoInfo.toBytes(buf);
         buf.writeInt(voteType);
         ClientPlayNetworking.send(CHANNEL_VIDEO_QUEUE_VOTE, buf);
     }
 
     public static void sendVideoQueueRemovePacket(VideoInfo videoInfo) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         videoInfo.toBytes(buf);
         ClientPlayNetworking.send(CHANNEL_VIDEO_QUEUE_REMOVE, buf);
     }
 
     public static void sendShowVideoTimelinePacket() {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         ClientPlayNetworking.send(CHANNEL_SHOW_VIDEO_TIMELINE, buf);
     }
 

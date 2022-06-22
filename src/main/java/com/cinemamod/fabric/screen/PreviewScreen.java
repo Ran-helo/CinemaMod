@@ -5,11 +5,11 @@ import com.cinemamod.fabric.buffer.PacketByteBufSerializable;
 import com.cinemamod.fabric.util.ImageUtil;
 import com.cinemamod.fabric.video.VideoInfo;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.Blocks;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,11 +29,11 @@ public class PreviewScreen implements PacketByteBufSerializable<PreviewScreen> {
     private transient boolean unregistered;
 
     @Nullable
-    private transient NativeImageBackedTexture staticTexture;
+    private transient DynamicTexture staticTexture;
     @Nullable
-    private transient NativeImageBackedTexture activeTexture;
+    private transient DynamicTexture activeTexture;
     @Nullable
-    private transient NativeImageBackedTexture thumbnailTexture;
+    private transient DynamicTexture thumbnailTexture;
 
     public PreviewScreen(int x, int y, int z, String facing, String staticTextureUrl, String activeTextureUrl) {
         this.x = x;
@@ -100,7 +100,7 @@ public class PreviewScreen implements PacketByteBufSerializable<PreviewScreen> {
     }
 
     @Nullable
-    public NativeImageBackedTexture getStaticTexture() {
+    public DynamicTexture getStaticTexture() {
         if (staticTexture == null && staticTextureUrl != null) {
             ImageUtil.fetchImageTextureFromUrl(staticTextureUrl).thenAccept(texture -> staticTexture = texture);
         }
@@ -109,7 +109,7 @@ public class PreviewScreen implements PacketByteBufSerializable<PreviewScreen> {
     }
 
     @Nullable
-    public NativeImageBackedTexture getActiveTexture() {
+    public DynamicTexture getActiveTexture() {
         if (activeTexture == null && activeTextureUrl != null) {
             ImageUtil.fetchImageTextureFromUrl(activeTextureUrl).thenAccept(texture -> activeTexture = texture);
         }
@@ -118,11 +118,11 @@ public class PreviewScreen implements PacketByteBufSerializable<PreviewScreen> {
     }
 
     @Nullable
-    public NativeImageBackedTexture getThumbnailTexture() {
+    public DynamicTexture getThumbnailTexture() {
         return thumbnailTexture;
     }
 
-    public void setThumbnailTexture(NativeImageBackedTexture thumbnailTexture) {
+    public void setThumbnailTexture(DynamicTexture thumbnailTexture) {
         if (this.thumbnailTexture != null) {
             this.thumbnailTexture.close();
         }
@@ -130,15 +130,15 @@ public class PreviewScreen implements PacketByteBufSerializable<PreviewScreen> {
     }
 
     public void register() {
-        if (MinecraftClient.getInstance().world == null) {
+        if (Minecraft.getInstance().level == null) {
             return;
         }
 
         int chunkX = x >> 4;
         int chunkZ = z >> 4;
 
-        if (MinecraftClient.getInstance().world.isChunkLoaded(chunkX, chunkZ)) {
-            MinecraftClient.getInstance().world.setBlockState(getBlockPos(), PreviewScreenBlock.PREVIEW_SCREEN_BLOCK.getDefaultState());
+        if (Minecraft.getInstance().level.hasChunk(chunkX, chunkZ)) {
+            Minecraft.getInstance().level.setBlockAndUpdate(getBlockPos(), PreviewScreenBlock.PREVIEW_SCREEN_BLOCK.defaultBlockState());
         }
 
         ClientChunkEvents.CHUNK_LOAD.register((clientWorld, worldChunk) -> {
@@ -148,7 +148,7 @@ public class PreviewScreen implements PacketByteBufSerializable<PreviewScreen> {
 
             // If the loaded chunk has this screen block in it, place it in the world
             if (worldChunk.getPos().x == chunkX && worldChunk.getPos().z == chunkZ) {
-                clientWorld.setBlockState(getBlockPos(), PreviewScreenBlock.PREVIEW_SCREEN_BLOCK.getDefaultState());
+                clientWorld.setBlockAndUpdate(getBlockPos(), PreviewScreenBlock.PREVIEW_SCREEN_BLOCK.defaultBlockState());
             }
         });
     }
@@ -160,24 +160,24 @@ public class PreviewScreen implements PacketByteBufSerializable<PreviewScreen> {
         if (activeTexture != null) activeTexture.close();
         if (thumbnailTexture != null) thumbnailTexture.close();
 
-        if (MinecraftClient.getInstance().world != null) {
-            MinecraftClient.getInstance().world.setBlockState(getBlockPos(), Blocks.AIR.getDefaultState());
+        if (Minecraft.getInstance().level != null) {
+            Minecraft.getInstance().level.setBlockAndUpdate(getBlockPos(), Blocks.AIR.defaultBlockState());
         }
     }
 
     @Override
-    public PreviewScreen fromBytes(PacketByteBuf buf) {
+    public PreviewScreen fromBytes(FriendlyByteBuf buf) {
         x = buf.readInt();
         y = buf.readInt();
         z = buf.readInt();
-        facing = buf.readString();
-        staticTextureUrl = buf.readString();
-        activeTextureUrl = buf.readString();
+        facing = buf.readUtf();
+        staticTextureUrl = buf.readUtf();
+        activeTextureUrl = buf.readUtf();
         return this;
     }
 
     @Override
-    public void toBytes(PacketByteBuf buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         throw new NotImplementedException("Not implemented on client");
     }
 

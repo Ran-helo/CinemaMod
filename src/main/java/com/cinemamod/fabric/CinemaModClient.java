@@ -16,7 +16,7 @@ import com.cinemamod.fabric.util.NetworkUtil;
 import com.cinemamod.fabric.video.list.VideoListManager;
 import com.cinemamod.fabric.video.queue.VideoQueue;
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 import org.cef.OS;
 
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class CinemaModClient implements ClientModInitializer {
 
     private static void initCefMac() {
         if (OS.isMacintosh()) {
-            Util.getBootstrapExecutor().execute(() -> {
+            Util.bootstrapExecutor().execute(() -> {
                 if (CefUtil.init()) {
                     CinemaMod.LOGGER.info("Chromium Embedded Framework initialized for macOS");
                 } else {

@@ -1,9 +1,8 @@
 package com.cinemamod.fabric.screen;
 
-import net.minecraft.util.math.BlockPos;
-
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.core.BlockPos;
 
 public class PreviewScreenManager {
 

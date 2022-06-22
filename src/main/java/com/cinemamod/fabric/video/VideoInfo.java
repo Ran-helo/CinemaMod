@@ -3,11 +3,11 @@ package com.cinemamod.fabric.video;
 import com.cinemamod.fabric.CinemaModClient;
 import com.cinemamod.fabric.buffer.PacketByteBufSerializable;
 import com.cinemamod.fabric.service.VideoService;
-import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import net.minecraft.network.FriendlyByteBuf;
 
 public class VideoInfo implements PacketByteBufSerializable<VideoInfo> {
 
@@ -114,24 +114,24 @@ public class VideoInfo implements PacketByteBufSerializable<VideoInfo> {
     }
 
     @Override
-    public VideoInfo fromBytes(PacketByteBuf buf) {
-        videoService = CinemaModClient.getInstance().getVideoServiceManager().getByName(buf.readString());
+    public VideoInfo fromBytes(FriendlyByteBuf buf) {
+        videoService = CinemaModClient.getInstance().getVideoServiceManager().getByName(buf.readUtf());
         if (videoService == null) return null;
-        id = buf.readString();
-        title = buf.readString();
-        poster = buf.readString();
-        thumbnailUrl = buf.readString();
+        id = buf.readUtf();
+        title = buf.readUtf();
+        poster = buf.readUtf();
+        thumbnailUrl = buf.readUtf();
         durationSeconds = buf.readLong();
         return this;
     }
 
     @Override
-    public void toBytes(PacketByteBuf buf) {
-        buf.writeString(videoService.getName());
-        buf.writeString(id);
-        buf.writeString(title);
-        buf.writeString(poster);
-        buf.writeString(thumbnailUrl);
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeUtf(videoService.getName());
+        buf.writeUtf(id);
+        buf.writeUtf(title);
+        buf.writeUtf(poster);
+        buf.writeUtf(thumbnailUrl);
         buf.writeLong(durationSeconds);
     }
 

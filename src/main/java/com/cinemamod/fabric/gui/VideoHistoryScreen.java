@@ -5,48 +5,47 @@ import com.cinemamod.fabric.gui.widget.VideoHistoryListWidget;
 import com.cinemamod.fabric.gui.widget.VideoListWidget;
 import com.cinemamod.fabric.video.list.VideoList;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Locale;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 
 public class VideoHistoryScreen extends Screen {
 
-    protected static final Identifier TEXTURE = new Identifier("textures/gui/social_interactions.png");
-    protected static final Text SEARCH_TEXT = (new TranslatableText("gui.socialInteractions.search_hint")).formatted(Formatting.ITALIC).formatted(Formatting.GRAY);
+    protected static final ResourceLocation TEXTURE = new ResourceLocation("textures/gui/social_interactions.png");
+    protected static final Component SEARCH_TEXT = (new TranslatableComponent("gui.socialInteractions.search_hint")).withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.GRAY);
 
-    private TextFieldWidget searchBox;
+    private EditBox searchBox;
     private VideoListWidget videoListWidget;
     private String currentSearch = "";
 
     public VideoHistoryScreen() {
-        super(Text.of("Video History"));
+        super(Component.nullToEmpty("Video History"));
     }
 
     @Override
     protected void init() {
-        client.keyboard.setRepeatEvents(true);
-        String string = searchBox != null ? searchBox.getText() : "";
-        searchBox = new TextFieldWidget(textRenderer, method_31362() + 28, 78, 196, 16, SEARCH_TEXT);
+        minecraft.keyboardHandler.setSendRepeatsToGui(true);
+        String string = searchBox != null ? searchBox.getValue() : "";
+        searchBox = new EditBox(font, method_31362() + 28, 78, 196, 16, SEARCH_TEXT);
         searchBox.setMaxLength(16);
-        searchBox.setDrawsBackground(false);
+        searchBox.setBordered(false);
         searchBox.setVisible(true);
-        searchBox.setEditableColor(16777215);
-        searchBox.setText(string);
-        searchBox.setChangedListener(this::onSearchChange);
-        addDrawableChild(searchBox);
+        searchBox.setTextColor(16777215);
+        searchBox.setValue(string);
+        searchBox.setResponder(this::onSearchChange);
+        addRenderableWidget(searchBox);
         VideoList videoList = CinemaModClient.getInstance().getVideoListManager().getHistory();
-        videoListWidget = new VideoHistoryListWidget(videoList, client, this.width, this.height, 88, this.method_31361(), 19);
+        videoListWidget = new VideoHistoryListWidget(videoList, minecraft, this.width, this.height, 88, this.method_31361(), 19);
     }
 
     @Override
     public void removed() {
-        client.keyboard.setRepeatEvents(false);
+        minecraft.keyboardHandler.setSendRepeatsToGui(false);
     }
 
     @Override
@@ -55,24 +54,24 @@ public class VideoHistoryScreen extends Screen {
         this.searchBox.tick();
     }
 
-    public void renderBackground(MatrixStack matrices) {
+    public void renderBackground(PoseStack matrices) {
         int i = this.method_31362() + 3;
         super.renderBackground(matrices);
         RenderSystem.setShaderTexture(0, TEXTURE);
-        this.drawTexture(matrices, i, 64, 1, 1, 236, 8);
+        this.blit(matrices, i, 64, 1, 1, 236, 8);
         int j = this.method_31360();
         for (int k = 0; k < j; ++k)
-            this.drawTexture(matrices, i, 72 + 16 * k, 1, 10, 236, 16);
-        this.drawTexture(matrices, i, 72 + 16 * j, 1, 27, 236, 8);
-        this.drawTexture(matrices, i + 10, 76, 243, 1, 12, 12);
+            this.blit(matrices, i, 72 + 16 * k, 1, 10, 236, 16);
+        this.blit(matrices, i, 72 + 16 * j, 1, 27, 236, 8);
+        this.blit(matrices, i + 10, 76, 243, 1, 12, 12);
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackground(matrices);
         videoListWidget.render(matrices, mouseX, mouseY, delta);
-        if (!this.searchBox.isFocused() && this.searchBox.getText().isEmpty()) {
-            drawTextWithShadow(matrices, this.client.textRenderer, SEARCH_TEXT, this.searchBox.x, this.searchBox.y, -1);
+        if (!this.searchBox.isFocused() && this.searchBox.getValue().isEmpty()) {
+            drawString(matrices, this.minecraft.font, SEARCH_TEXT, this.searchBox.x, this.searchBox.y, -1);
         } else {
             this.searchBox.render(matrices, mouseX, mouseY, delta);
         }
@@ -114,8 +113,8 @@ public class VideoHistoryScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!this.searchBox.isFocused() && this.client.options.inventoryKey.matchesKey(keyCode, scanCode)) {
-            close();
+        if (!this.searchBox.isFocused() && this.minecraft.options.keyInventory.matches(keyCode, scanCode)) {
+            onClose();
             return true;
         } else {
             return super.keyPressed(keyCode, scanCode, modifiers);

@@ -1,7 +1,7 @@
 package com.cinemamod.fabric;
 
 import com.cinemamod.fabric.screen.Screen;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 public class WindowFocusMuteThread extends Thread {
 
@@ -14,21 +14,21 @@ public class WindowFocusMuteThread extends Thread {
 
     @Override
     public void run() {
-        while (MinecraftClient.getInstance().isRunning()) {
+        while (Minecraft.getInstance().isRunning()) {
             if (CinemaModClient.getInstance().getVideoSettings().isMuteWhenAltTabbed()) {
-                if (MinecraftClient.getInstance().isWindowFocused() && !previousState) {
+                if (Minecraft.getInstance().isWindowActive() && !previousState) {
                     // if currently focused and was previously not focused
                     for (Screen screen : CinemaModClient.getInstance().getScreenManager().getScreens()) {
                         screen.setVideoVolume(CinemaModClient.getInstance().getVideoSettings().getVolume());
                     }
-                } else if (!MinecraftClient.getInstance().isWindowFocused() && previousState) {
+                } else if (!Minecraft.getInstance().isWindowActive() && previousState) {
                     // if not focused and was previous focused
                     for (Screen screen : CinemaModClient.getInstance().getScreenManager().getScreens()) {
                         screen.setVideoVolume(0f);
                     }
                 }
 
-                previousState = MinecraftClient.getInstance().isWindowFocused();
+                previousState = Minecraft.getInstance().isWindowActive();
             }
 
             try {

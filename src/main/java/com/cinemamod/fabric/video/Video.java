@@ -1,7 +1,7 @@
 package com.cinemamod.fabric.video;
 
 import com.cinemamod.fabric.buffer.PacketByteBufSerializable;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import org.apache.commons.lang3.NotImplementedException;
 
 public class Video implements PacketByteBufSerializable<Video> {
@@ -27,7 +27,7 @@ public class Video implements PacketByteBufSerializable<Video> {
     }
 
     @Override
-    public Video fromBytes(PacketByteBuf buf) {
+    public Video fromBytes(FriendlyByteBuf buf) {
         videoInfo = new VideoInfo().fromBytes(buf);
         if (videoInfo == null) return null;
         startedAt = buf.readLong();
@@ -35,7 +35,7 @@ public class Video implements PacketByteBufSerializable<Video> {
     }
 
     @Override
-    public void toBytes(PacketByteBuf buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         throw new NotImplementedException("Not implemented on client");
     }
 

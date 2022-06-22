@@ -1,32 +1,36 @@
 package com.cinemamod.fabric.gui;
 
 import com.cinemamod.fabric.cef.CefUtil;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.render.*;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import org.cef.browser.CefBrowserOsr;
 import org.lwjgl.glfw.GLFW;
 
 public class VideoRequestBrowser extends Screen {
 
-    protected static KeyBinding keyBinding;
+    protected static KeyMapping keyBinding;
     private static CefBrowserOsr browser;
     private static final int browserDrawOffset = 40;
 
-    private ButtonWidget backBtn, fwdBtn, requestBtn, closeBtn;
-    private TextFieldWidget urlField;
+    private Button backBtn, fwdBtn, requestBtn, closeBtn;
+    private EditBox urlField;
 
     protected VideoRequestBrowser() {
-        super(Text.of("Video Request Browser"));
+        super(Component.nullToEmpty("Video Request Browser"));
     }
 
     @Override
@@ -39,76 +43,76 @@ public class VideoRequestBrowser extends Screen {
 
         if (browser == null) return;
 
-        browser.resize(client.getWindow().getWidth(), client.getWindow().getHeight() - scaleY(20));
+        browser.resize(minecraft.getWindow().getScreenWidth(), minecraft.getWindow().getScreenHeight() - scaleY(20));
 
-        addDrawableChild(backBtn = (new ButtonWidget(browserDrawOffset, browserDrawOffset - 20, 20, 20, new LiteralText("<"), button -> {
+        addRenderableWidget(backBtn = (new Button(browserDrawOffset, browserDrawOffset - 20, 20, 20, new TextComponent("<"), button -> {
             System.out.println("back button");
         })));
-        addDrawableChild(fwdBtn = (new ButtonWidget(browserDrawOffset + 20, browserDrawOffset - 20, 20, 20, new LiteralText(">"), button -> {
+        addRenderableWidget(fwdBtn = (new Button(browserDrawOffset + 20, browserDrawOffset - 20, 20, 20, new TextComponent(">"), button -> {
             System.out.println("fwd button");
         })));
-        addDrawableChild(requestBtn = (new ButtonWidget(width - browserDrawOffset - 20 - 60, browserDrawOffset - 20, 60, 20, new LiteralText("Request"), button -> {
+        addRenderableWidget(requestBtn = (new Button(width - browserDrawOffset - 20 - 60, browserDrawOffset - 20, 60, 20, new TextComponent("Request"), button -> {
             System.out.println("request button");
         })));
-        addDrawableChild(closeBtn = (new ButtonWidget(width - browserDrawOffset - 20, browserDrawOffset - 20, 20, 20, new LiteralText("X"), button -> {
+        addRenderableWidget(closeBtn = (new Button(width - browserDrawOffset - 20, browserDrawOffset - 20, 20, 20, new TextComponent("X"), button -> {
             System.out.println("close button");
         })));
 
-        urlField = new TextFieldWidget(client.textRenderer, browserDrawOffset + 40, browserDrawOffset - 20 + 1, width - browserDrawOffset - 160, 20, new LiteralText(""));
+        urlField = new EditBox(minecraft.font, browserDrawOffset + 40, browserDrawOffset - 20 + 1, width - browserDrawOffset - 160, 20, new TextComponent(""));
         urlField.setMaxLength(65535);
-        urlField.setText(browser.getURL()); // why does getURL return an empty string here?
+        urlField.setValue(browser.getURL()); // why does getURL return an empty string here?
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
         urlField.render(matrices, mouseX, mouseY, delta);
         super.render(matrices, mouseX, mouseY, delta);
         RenderSystem.disableDepthTest();
         RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
         int glId = browser.renderer_.texture_id_[0];
         RenderSystem.setShaderTexture(0, glId);
-        Tessellator t = Tessellator.getInstance();
-        BufferBuilder buffer = t.getBuffer();
-        buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE);
-        buffer.vertex(browserDrawOffset, height - browserDrawOffset, 0).color(255, 255, 255, 255).texture(0.0f, 1.0f).next();
-        buffer.vertex(width - browserDrawOffset, height - browserDrawOffset, 0).color(255, 255, 255, 255).texture(1.0f, 1.0f).next();
-        buffer.vertex(width - browserDrawOffset, browserDrawOffset, 0).color(255, 255, 255, 255).texture(1.0f, 0.0f).next();
-        buffer.vertex(browserDrawOffset, browserDrawOffset, 0).color(255, 255, 255, 255).texture(0.0f, 0.0f).next();
-        t.draw();
+        Tesselator t = Tesselator.getInstance();
+        BufferBuilder buffer = t.getBuilder();
+        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+        buffer.vertex(browserDrawOffset, height - browserDrawOffset, 0).color(255, 255, 255, 255).uv(0.0f, 1.0f).endVertex();
+        buffer.vertex(width - browserDrawOffset, height - browserDrawOffset, 0).color(255, 255, 255, 255).uv(1.0f, 1.0f).endVertex();
+        buffer.vertex(width - browserDrawOffset, browserDrawOffset, 0).color(255, 255, 255, 255).uv(1.0f, 0.0f).endVertex();
+        buffer.vertex(browserDrawOffset, browserDrawOffset, 0).color(255, 255, 255, 255).uv(0.0f, 0.0f).endVertex();
+        t.end();
         RenderSystem.setShaderTexture(0, 0);
         RenderSystem.enableDepthTest();
-        matrices.pop();
+        matrices.popPose();
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void onClose() {
+        super.onClose();
         browser.close();
         browser = null;
     }
 
     public int scaleY(int y) {
-        assert client != null;
-        double sy = ((double) y) / ((double) height) * ((double) client.getWindow().getHeight());
+        assert minecraft != null;
+        double sy = ((double) y) / ((double) height) * ((double) minecraft.getWindow().getScreenHeight());
         return (int) sy;
     }
 
     public int scaleX(int x) {
-        assert client != null;
-        double sx = ((double) x) / ((double) width) * ((double) client.getWindow().getWidth());
+        assert minecraft != null;
+        double sx = ((double) x) / ((double) width) * ((double) minecraft.getWindow().getScreenWidth());
         return (int) sx;
     }
 
     public static void registerKeyInput() {
-        keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        keyBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.cinemamod.openrequestbrowser",
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_G,
                 "category.cinemamod.keybinds"
         ));
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
-            if (keyBinding.wasPressed()) {
+            if (keyBinding.consumeClick()) {
                 client.setScreen(new VideoRequestBrowser());
             }
         });

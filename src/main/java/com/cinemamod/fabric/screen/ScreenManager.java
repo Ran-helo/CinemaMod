@@ -1,11 +1,10 @@
 package com.cinemamod.fabric.screen;
 
-import net.minecraft.util.math.BlockPos;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.BlockPos;
 
 public class ScreenManager {
 

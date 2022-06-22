@@ -1,22 +1,22 @@
 package com.cinemamod.fabric.mixins;
 
 import com.cinemamod.fabric.CinemaModClient;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientLevel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(MinecraftClient.class)
+@Mixin(Minecraft.class)
 public class UnloadScreensMixin {
 
     @Shadow
-    private ClientWorld world;
+    private ClientLevel level;
 
-    @Inject(at = @At("HEAD"), method = "disconnect(Lnet/minecraft/client/gui/screen/Screen;)V")
+    @Inject(at = @At("HEAD"), method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V")
     private void disconnect(Screen screen, CallbackInfo info) {
         CinemaModClient.getInstance().getScreenManager().unloadAll();
         CinemaModClient.getInstance().getPreviewScreenManager().unloadAll();

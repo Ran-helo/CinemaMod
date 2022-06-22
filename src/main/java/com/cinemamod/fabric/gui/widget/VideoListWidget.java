@@ -3,32 +3,32 @@ package com.cinemamod.fabric.gui.widget;
 import com.cinemamod.fabric.video.list.VideoList;
 import com.cinemamod.fabric.video.list.VideoListEntry;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.ElementListWidget;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 
-public abstract class VideoListWidget extends ElementListWidget<VideoListWidgetEntry> {
+public abstract class VideoListWidget extends ContainerObjectSelectionList<VideoListWidgetEntry> {
 
     protected final VideoList videoList;
     @Nullable
     private String search;
 
-    public VideoListWidget(VideoList videoList, MinecraftClient client, int width, int height, int top, int bottom, int itemHeight) {
+    public VideoListWidget(VideoList videoList, Minecraft client, int width, int height, int top, int bottom, int itemHeight) {
         super(client, width, height, top, bottom, itemHeight);
         this.videoList = videoList;
         setRenderBackground(false);
-        setRenderHorizontalShadows(false);
+        setRenderTopAndBottom(false);
         update();
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        double d = client.getWindow().getScaleFactor();
-        RenderSystem.enableScissor((int) ((double) this.getRowLeft() * d), (int) ((double) (this.height - this.bottom) * d), (int) ((double) (this.getScrollbarPositionX() + 6) * d), (int) ((double) (this.height - (this.height - this.bottom) - this.top - 4) * d));
+    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+        double d = minecraft.getWindow().getGuiScale();
+        RenderSystem.enableScissor((int) ((double) this.getRowLeft() * d), (int) ((double) (this.height - this.y1) * d), (int) ((double) (this.getScrollbarPosition() + 6) * d), (int) ((double) (this.height - (this.height - this.y1) - this.y0 - 4) * d));
         super.render(matrices, mouseX, mouseY, delta);
         RenderSystem.disableScissor();
     }

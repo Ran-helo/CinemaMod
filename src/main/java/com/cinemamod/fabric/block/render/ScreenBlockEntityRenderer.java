@@ -5,33 +5,33 @@ import com.cinemamod.fabric.block.ScreenBlockEntity;
 import com.cinemamod.fabric.screen.Screen;
 import com.cinemamod.fabric.screen.ScreenManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 
 public class ScreenBlockEntityRenderer implements BlockEntityRenderer<ScreenBlockEntity> {
 
-    public ScreenBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
+    public ScreenBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
     }
 
     @Override
-    public void render(ScreenBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void render(ScreenBlockEntity entity, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
         ScreenManager screenManager = CinemaModClient.getInstance().getScreenManager();
-        Screen screen = screenManager.getScreen(entity.getPos());
+        Screen screen = screenManager.getScreen(entity.getBlockPos());
         if (screen == null || !screen.isVisible()) return;
         RenderSystem.enableDepthTest();
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder buffer = tessellator.getBuilder();
         renderScreenTexture(screen, matrices, tessellator, buffer);
         RenderSystem.disableDepthTest();
     }
 
-    private static void renderScreenTexture(Screen screen, MatrixStack matrices, Tessellator tessellator, BufferBuilder buffer) {
-        matrices.push();
+    private static void renderScreenTexture(Screen screen, PoseStack matrices, Tesselator tessellator, BufferBuilder buffer) {
+        matrices.pushPose();
         matrices.translate(1, 1, 0);
         RenderUtil.moveForward(matrices, screen.getFacing(), 0.008f);
         RenderUtil.fixRotation(matrices, screen.getFacing());
@@ -42,11 +42,11 @@ public class ScreenBlockEntityRenderer implements BlockEntityRenderer<ScreenBloc
         } else {
             RenderUtil.renderBlack(matrices, tessellator, buffer);
         }
-        matrices.pop();
+        matrices.popPose();
     }
 
     @Override
-    public boolean rendersOutsideBoundingBox(ScreenBlockEntity blockEntity) {
+    public boolean shouldRenderOffScreen(ScreenBlockEntity blockEntity) {
         return true;
     }
 

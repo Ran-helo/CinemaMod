@@ -2,11 +2,11 @@ package com.cinemamod.fabric.video.queue;
 
 import com.cinemamod.fabric.buffer.PacketByteBufSerializable;
 import com.cinemamod.fabric.video.VideoInfo;
-import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.network.FriendlyByteBuf;
 
 public class VideoQueue implements PacketByteBufSerializable<VideoQueue> {
 
@@ -25,7 +25,7 @@ public class VideoQueue implements PacketByteBufSerializable<VideoQueue> {
     }
 
     @Override
-    public VideoQueue fromBytes(PacketByteBuf buf) {
+    public VideoQueue fromBytes(FriendlyByteBuf buf) {
         List<QueuedVideo> videos = new ArrayList<>();
         int length = buf.readInt();
         for (int i = 0; i < length; i++) {
@@ -40,7 +40,7 @@ public class VideoQueue implements PacketByteBufSerializable<VideoQueue> {
     }
 
     @Override
-    public void toBytes(PacketByteBuf buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         throw new NotImplementedException("Not implemented on client");
     }
 
